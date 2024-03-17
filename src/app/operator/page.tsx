@@ -1,7 +1,7 @@
 "use client";
-import styles from "./page.module.css";
+import styles from "./operator.module.css";
 import { useEffect, useRef, useState } from "react";
-import ClientSideTopaz from "../component/client-side-topaz";
+import ClientSideOperator from "../../component/client-side-operator";
 
 declare global {
 	interface Window {
@@ -22,7 +22,6 @@ export default function Home() {
 		url.current = document.documentElement.getAttribute(
 			"SigPlusExtLiteWrapperURL"
 		);
-		console.log(url.current);
 		var script = document.createElement("script");
 		script.src = url.current;
 		script.onload = () => {
@@ -41,13 +40,7 @@ export default function Home() {
 	}, []);
 	return (
 		<main className={styles.main}>
-			<ClientSideTopaz
-				opener={opener}
-				global={global}
-				gemview={gemview}
-				canvas_sign={canvas_sign}
-				capture_sign={capture_sign}
-			/>
+			<ClientSideOperator gemview={gemview} />
 		</main>
 	);
 }
