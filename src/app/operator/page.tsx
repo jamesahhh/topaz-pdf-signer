@@ -27,7 +27,7 @@ export default function Home() {
 		script.onload = () => {
 			if (window.Topaz) {
 				setGlobal(window.Topaz.Global);
-				setGemview(window.Topaz.GemView);
+				setGemview(window.opener.Topaz.GemView);
 				setCanvas(window.Topaz.Canvas.Sign);
 				setLcd(window.Topaz.Canvas.LCDTablet);
 				setCapture(window.Topaz.SignatureCaptureWindow.Sign); // Assuming 'Topaz' is now available on the 'window' object
@@ -38,9 +38,13 @@ export default function Home() {
 		}
 		document.body.appendChild(script);
 	}, []);
+
 	return (
 		<main className={styles.main}>
-			<ClientSideOperator gemview={gemview} />
+			<ClientSideOperator
+				gemview={gemview}
+				opener={opener}
+			/>
 		</main>
 	);
 }

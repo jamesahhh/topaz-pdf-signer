@@ -1,10 +1,18 @@
 "use client";
 
+import { Button, Group } from "@mantine/core";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
-function ClientSideOperator({ gemview }: { gemview: any }) {
+function ClientSideOperator({
+	gemview,
+	opener,
+}: {
+	gemview: any;
+	opener: any;
+}) {
 	const [capture, setCapture] = useState<any>(null);
+	const [sigs, setSigs] = useState<any>([]);
 
 	useEffect(() => {
 		if (gemview) {
@@ -14,6 +22,18 @@ function ClientSideOperator({ gemview }: { gemview: any }) {
 
 	return (
 		<>
+			<Group>
+				<Button
+					onClick={async () => {
+						await opener.Topaz.GemView.RevertCurrentTab(1);
+						await gemview.LoadIdleScreen();
+						await gemview.StopCaptureGemViewScreen();
+						await setTimeout(() => window.close(), 750);
+					}}
+				>
+					Recall Window
+				</Button>
+			</Group>
 			{capture && (
 				<Image
 					src={capture}
