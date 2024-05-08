@@ -1,7 +1,13 @@
 "use client";
 
-import { Box, ScrollArea } from "@mantine/core";
-import { useDisclosure, useListState } from "@mantine/hooks";
+import {
+	Box,
+	Button,
+	NumberInput,
+	NumberInputHandlers,
+	ScrollArea,
+} from "@mantine/core";
+import { useDisclosure, useElementSize, useListState } from "@mantine/hooks";
 import { saveAs } from "file-saver";
 import { PDFDocument } from "pdf-lib";
 import { useEffect, useRef, useState } from "react";
@@ -9,15 +15,7 @@ import { Document, Page, Thumbnail, pdfjs } from "react-pdf";
 import SignControls from "./sign-controls";
 import SignatureRnD from "./signature-rnd";
 import styles from "./client-side-topaz.module.css";
-interface Sig {
-	b64: string;
-	x: number;
-	y: number;
-	width: number;
-	height: number;
-	cx: number;
-	cy: number;
-}
+import { Sig } from "./types";
 
 function ClientSideTopaz() {
 	const [pushed, handlers] = useDisclosure(false);
@@ -25,15 +23,18 @@ function ClientSideTopaz() {
 	const [operator, setOperator] = useState<any>(null);
 
 	let url = useRef<any>();
+	const handlersRef = useRef<NumberInputHandlers>(null);
 	const pageRef = useRef<HTMLDivElement>(null);
 	const [curr_page, setPage] = useState(1);
-	let [global, setGlobal] = useState<any>(null);
+
 	let [gemview, setGemview] = useState<any>(null);
 	let [canvas_sign, setCanvas] = useState<any>(null);
-	let [canvas_lcd, setLcd] = useState<any>(null);
+
 	let [capture_sign, setCapture] = useState<any>(null);
 	const [files, setFiles] = useState<File | null>(null);
 	const [dragging, dragHandler] = useDisclosure(false);
+	const { ref, width, height } = useElementSize();
+	const [docScale, setDocScale] = useState<number | undefined>(1);
 
 	// Load the PDF.js library from cdn
 	pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
@@ -48,10 +49,9 @@ function ClientSideTopaz() {
 		script.src = url.current;
 		script.onload = () => {
 			if (window.Topaz) {
-				setGlobal(window.Topaz.Global);
 				setGemview(window.Topaz.GemView);
 				setCanvas(window.Topaz.Canvas.Sign);
-				setLcd(window.Topaz.Canvas.LCDTablet);
+
 				setCapture(window.Topaz.SignatureCaptureWindow.Sign); // Assuming 'Topaz' is now available on the 'window' object
 			}
 		};
@@ -60,29 +60,42 @@ function ClientSideTopaz() {
 	}, []);
 
 	async function pushOperator() {
+		console.log(window);
 		setOperator(window.open("/operator", "ctrlOperator"));
 		await gemview.CloseIdleScreen();
 		await gemview.PushCurrentTab();
 		handlers.toggle();
 	}
 
-	async function pushDocument(files: File | null) {
-		if (files != null) {
+	async function handleReturn() {
+		await gemview.RevertCurrentTab(1);
+		operator.close();
+		gemview.LoadIdleScreen();
+		handlers.toggle();
+	}
+
+	async function pushDocument(
+		files: File | null,
+		width: number,
+		docScale: number | undefined
+	) {
+		if (files != null && docScale) {
 			const result = await files.arrayBuffer(); //read file to buffer
 
 			const doc = await PDFDocument.load(result);
 			const pages = doc.getPages();
 			const firstPage = pages[0];
-			const { width, height } = firstPage.getSize();
-			console.log(width, height);
+			const { width: docw, height: doch } = firstPage.getSize();
+			const scale = docw / width;
 			sigs_b64.map(async (sig, i) => {
 				const image = await doc.embedPng(sig.b64);
 
 				await firstPage.drawImage(image, {
-					x: sig.x / 2,
-					y: height - sig.y / 2 - sig.height / 2,
-					width: sig.width / 2,
-					height: sig.height / 2,
+					x: (sig.x / docScale) * scale,
+					y:
+						doch - (sig.y / docScale) * scale - (sig.height / docScale) * scale,
+					width: (sig.width / docScale) * scale,
+					height: (sig.height / docScale) * scale,
 				});
 			});
 
@@ -94,11 +107,11 @@ function ClientSideTopaz() {
 		}
 	}
 
-	function addSigElement(event: any) {
-		if (pageRef.current && event.target.dir == "ltr") {
+	function addSigElement(event: any, docScale: number | undefined) {
+		if (pageRef.current && event.target.dir == "ltr" && docScale) {
 			const rect = pageRef.current.getBoundingClientRect();
-			const x = event.clientX - rect.left; // x position within the element.
-			const y = event.clientY - rect.top; // y position within the element.
+			const x = event.clientX - rect.left * docScale; // x position within the element.
+			const y = event.clientY - rect.top * docScale; // y position within the element.
 
 			console.log(`Click position within element: x: ${x}, y: ${y}`);
 			sigsHandler.append({
@@ -107,14 +120,14 @@ function ClientSideTopaz() {
 				y: y,
 				width: 300,
 				height: 150,
-				cx: x + 150 / 2,
-				cy: 75,
+				scale: docScale,
 			});
 		}
 	}
 
 	const sig_els = sigs_b64.map((sig, i) => (
 		<SignatureRnD
+			docScale={sig?.scale}
 			dragging={dragHandler}
 			key={`signatureRnd-${i}`}
 			index={i}
@@ -128,77 +141,84 @@ function ClientSideTopaz() {
 	));
 
 	return (
-		<Box
-			data-files={files !== null}
-			className={styles.topaz_client_container}
-		>
-			{files && (
+		<Box className={styles.topaz_container}>
+			<Box
+				data-files={files !== null}
+				data-pushed={pushed}
+				className={styles.topaz_document_container}
+			>
+				{/* {files && (
 				<div className={"preview"}>
-					<Document file={files}>
-						<Thumbnail
-							pageNumber={curr_page}
-							scale={0.1}
-						/>
-					</Document>
-				</div>
-			)}
-			{files && (
-				<Document
-					file={files}
-					renderMode="canvas"
-				>
-					<ScrollArea h="100vh">
-						<div
-							ref={pageRef}
-							className="canvas_container"
-							onMouseUp={(e) => !dragging && addSigElement(e)}
-						>
-							<Page
-								renderTextLayer={false}
-								renderAnnotationLayer={false}
-								pageNumber={curr_page}
-								scale={2}
-								renderForms={false}
-							>
-								{sig_els}
-							</Page>
-						</div>
-					</ScrollArea>
+				<Document file={files}>
+				<Thumbnail
+				pageNumber={curr_page}
+				scale={0.1}
+				/>
 				</Document>
+				</div>
+			)} */}
+				<div
+					className={styles.document}
+					ref={ref}
+				>
+					{files && (
+						<Document
+							file={files}
+							renderMode="canvas"
+						>
+							<ScrollArea
+								h="100vh"
+								w={width}
+							>
+								<div
+									ref={pageRef}
+									className="canvas_container"
+									onMouseUp={(e) => !dragging && addSigElement(e, docScale)}
+								>
+									<Page
+										renderTextLayer={false}
+										renderAnnotationLayer={false}
+										pageNumber={curr_page}
+										width={width}
+										scale={docScale}
+										renderForms={false}
+									>
+										{sig_els}
+									</Page>
+								</div>
+							</ScrollArea>
+						</Document>
+					)}
+				</div>
+			</Box>
+			{!pushed && (
+				<SignControls
+					docScale={docScale}
+					sigs_b64={sigs_b64}
+					pushDocument={pushDocument}
+					files={files}
+					setFiles={setFiles}
+					pushOperator={pushOperator}
+					width={width}
+				/>
 			)}
-			<SignControls
-				pushDocument={pushDocument}
-				files={files}
-				setFiles={setFiles}
-				pushOperator={pushOperator}
+			<Button
+				data-pushed={pushed}
+				className={styles.pushed}
+				onClick={handleReturn}
+			>
+				This
+			</Button>
+			<NumberInput
+				className={styles.scale}
+				value={docScale}
+				step={0.05}
+				stepHoldDelay={500}
+				stepHoldInterval={100}
+				onChange={(value) => {
+					setDocScale(Number(value));
+				}}
 			/>
-			{/* <>
-				<Button
-					className={styles.button}
-					data-file={files != null}
-					variant="filled"
-					// color="red"
-					rightSection={<IconDeviceDesktopShare />}
-					onClick={pushOperator}
-				>
-					Push Form to Signer
-				</Button>
-				<FileButton
-					onChange={setFiles}
-					accept="application/pdf"
-				>
-					{(props) => <Button {...props}>Upload</Button>}
-				</FileButton>
-				<Button
-					variant="fillled"
-					color="red"
-					data-file={files != null}
-					onClick={() => pushDocument(files)}
-					rightSection={<IconScript />}
-				>
-					Save Document
-				</Button>
-			</> */}
 		</Box>
 	);
 }

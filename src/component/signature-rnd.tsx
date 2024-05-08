@@ -12,7 +12,7 @@ import {
 import { useResizeObserver } from "@mantine/hooks";
 function SignatureRnD({
 	pushed,
-	canvas_sign,
+	docScale,
 	capture_sign,
 	coords: { x, y },
 	index,
@@ -20,6 +20,7 @@ function SignatureRnD({
 	dims: { width, height },
 	dragging,
 }: {
+	docScale: number | undefined;
 	dragging: any;
 	sigsHandler: any;
 	index: number;
@@ -69,36 +70,34 @@ function SignatureRnD({
 
 		img.src = "data:image/png;base64," + b64;
 	};
-	const removePixels = (canvas: HTMLCanvasElement) => {
-		const ctx = canvas.getContext("2d");
-		if (ctx != null) {
-			const imageData = ctx?.getImageData(0, 0, canvas.width, canvas.height);
-			const data = imageData?.data; // the array of RGBA values
 
-			if (data != null) {
-				// Loop over each pixel and set the alpha to 0 for white pixels
-				for (let i = 0; i < data.length; i += 4) {
-					const r = data[i];
-					const g = data[i + 1];
-					const b = data[i + 2];
-					// Assuming white is RGB(255, 255, 255), you might need to adjust the tolerance
-					if (r === 255 && g === 255 && b === 255) {
-						data[i + 3] = 0; // Set alpha to 0 (transparent)
-					}
-				}
-			}
-			// Write the modified image data back to the canvas
-			ctx.putImageData(imageData, 0, 0);
-			console.log("here");
-		}
-	};
 	const handleMove = (e: any, data: any) => {
-		console.log(data);
 		dragging.toggle();
 		e.stopPropagation();
 		sigsHandler.setItemProp(index, "x", data.x);
 		sigsHandler.setItemProp(index, "y", data.y);
 	};
+
+	const handleResize = (
+		e: any,
+		dir: any,
+		ref: any,
+		delta: any,
+		position: any
+	) => {
+		dragging.toggle();
+		e.stopPropagation();
+		sigsHandler.setItemProp(index, "x", position.x);
+		sigsHandler.setItemProp(index, "y", position.y);
+		sigsHandler.setItemProp(index, "width", ref.clientWidth);
+		sigsHandler.setItemProp(index, "height", ref.clientHeight);
+	};
+
+	const handleStartAction = (e: any) => {
+		e.stopPropagation();
+		dragging.toggle();
+	};
+
 	return (
 		<Rnd
 			bounds={"parent"}
@@ -116,30 +115,16 @@ function SignatureRnD({
 			}}
 			lockAspectRatio={true}
 			resizeHandleComponent={{
-				bottomRight: <IconResize />,
+				bottomRight: <IconResize size={10} />,
 			}}
 			resizeHandleClasses={{ bottomRight: styles.resizer }}
 			onClick={(e: any) => {
 				e.stopPropagation();
 			}}
-			onDragStart={(e: any) => {
-				dragging.toggle();
-				e.stopPropagation();
-			}}
+			onDragStart={handleStartAction}
 			onDragStop={handleMove}
-			onResizeStart={(e: any) => {
-				dragging.toggle();
-				e.stopPropagation();
-			}}
-			onResizeStop={(e: any, dir: any, ref: any, delta: any, position: any) => {
-				console.log(position);
-				dragging.toggle();
-				e.stopPropagation();
-				sigsHandler.setItemProp(index, "x", position.x + ref.clientWidth / 2);
-				sigsHandler.setItemProp(index, "y", position.y + ref.clientHeight / 2);
-				sigsHandler.setItemProp(index, "width", ref.clientWidth);
-				sigsHandler.setItemProp(index, "height", ref.clientHeight);
-			}}
+			onResizeStart={handleStartAction}
+			onResizeStop={handleResize}
 			dragHandleClassName={`dragHandle-${index}`}
 		>
 			<canvas

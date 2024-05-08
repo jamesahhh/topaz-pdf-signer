@@ -13,25 +13,41 @@ import {
 	IconScript,
 } from "@tabler/icons-react";
 import styles from "./sign-controls.module.css";
+import { Sig } from "./types";
 
 function SignControls({
 	setFiles,
 	pushOperator,
 	files,
 	pushDocument,
+	sigs_b64,
+	width,
+	docScale,
 }: {
+	sigs_b64: Sig[];
 	files: File | null;
-	pushDocument: (file: File | null) => void;
+	pushDocument: (
+		file: File | null,
+		width: number,
+		docScale: number | undefined
+	) => void;
 	pushOperator: () => void;
 	setFiles: (payload: File | null) => void;
+	width: number;
+	docScale: number | undefined;
 }) {
 	return (
 		<Box
-			data-file={files != null}
+			data-file={files !== null}
 			className={styles.sign_controls}
 		>
-			<Text className={styles.instructions}>
-				Upload a PDF document to get started!
+			<Text
+				// data-file={files != null}
+				className={styles.instructions}
+			>
+				{files
+					? "Click anywhere on the document to add a signature field"
+					: "Upload a PDF document to get started!"}
 			</Text>
 			<List
 				data-file={files == null}
@@ -51,17 +67,23 @@ function SignControls({
 				>
 					{(props) => (
 						<Button
+							data-file={files != null}
 							radius={"lg"}
+							color="#EB5E28"
+							autoContrast
+							variant="filled"
 							rightSection={<IconFileUpload />}
 							{...props}
 						>
-							{files ? "Upload" : "Upload PDF Document"}
+							{files ? "New" : "Select PDF Document"}
 						</Button>
 					)}
 				</FileButton>
 				<Button
 					data-file={files != null}
 					className={styles.button}
+					color="#403D39"
+					autoContrast
 					radius={"lg"}
 				>
 					{files ? "Clear" : "Clear PDF Document"}
@@ -78,10 +100,11 @@ function SignControls({
 				Push Form to Signer
 			</Button>
 			<Button
-				variant="fillled"
+				className={styles.button}
+				variant="filled"
 				color="red"
-				data-file={files == null}
-				onClick={() => pushDocument(files)}
+				data-file={files != null && sigs_b64.length > 0}
+				onClick={() => pushDocument(files, width, docScale)}
 				rightSection={<IconScript />}
 			>
 				Save Document
@@ -91,7 +114,7 @@ function SignControls({
 				data-file={files !== null}
 			>
 				<h3>HRCU</h3>
-				<p>Document Signer</p>
+				<p>PDF Document Signer</p>
 			</div>
 		</Box>
 	);

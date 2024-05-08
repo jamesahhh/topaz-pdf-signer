@@ -1,9 +1,8 @@
 .main {
-  background-color: whitesmoke;
+  background-color: #CCC5B9;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-
 }
 
 .description {
