@@ -1,33 +1,35 @@
 .topaz_document_container {
 	
 	&[data-pushed="true"] {
-		width: calc(100% - 10rem);
-		height: calc(100% - 10rem);
+		width: 1100px;
+		height: calc(100% - .5rem);
 	}
 	&[data-files="false"] {
 		display: none;
+		flex: 0;
 	}
+	/* padding-right: 345px; */
 	margin: 1.5rem;
-	display: flex;
+	/* box-sizing: border-box;  */
+	padding: auto;
 	justify-content: center;
+	align-items: center;
+	display: flex;
 	height: 100%;
-	width: calc(100% - 346px);
-	max-width: calc(100% - 346px);
+	flex : 1;
 }
 
 .topaz_container {
 	/* padding: 100px; */
 	display: flex;
-	flex-wrap: nowrap;
 	flex-direction: row;
 	align-items: stretch;
-	justify-content: center;
 	width: 100%;
 	height: 100%;
 }
 
 .document {
-	width: 100%;
+	width: 1100px;
 	height: 100%;
 }
 

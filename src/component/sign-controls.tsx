@@ -20,6 +20,7 @@ function SignControls({
 	pushOperator,
 	files,
 	pushDocument,
+	pushedToggle,
 	sigs_b64,
 	width,
 	docScale,
@@ -31,6 +32,7 @@ function SignControls({
 		width: number,
 		docScale: number | undefined
 	) => void;
+	pushedToggle: () => void;
 	pushOperator: () => void;
 	setFiles: (payload: File | null) => void;
 	width: number;
@@ -104,7 +106,10 @@ function SignControls({
 				variant="filled"
 				color="red"
 				data-file={files != null && sigs_b64.length > 0}
-				onClick={() => pushDocument(files, width, docScale)}
+				onClick={() => {
+					pushDocument(files, width, docScale);
+					pushedToggle();
+				}}
 				rightSection={<IconScript />}
 			>
 				Save Document

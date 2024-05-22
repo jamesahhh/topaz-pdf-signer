@@ -16,21 +16,22 @@ import SignControls from "./sign-controls";
 import SignatureRnD from "./signature-rnd";
 import styles from "./client-side-topaz.module.css";
 import { Sig } from "./types";
+import { setGlobal } from "next/dist/trace";
 
 function ClientSideTopaz() {
 	const [pushed, handlers] = useDisclosure(false);
 	const [sigs_b64, sigsHandler] = useListState<Sig>([]);
 	const [operator, setOperator] = useState<any>(null);
 
-	let url = useRef<any>();
+	var url = useRef<any>();
 	const handlersRef = useRef<NumberInputHandlers>(null);
 	const pageRef = useRef<HTMLDivElement>(null);
 	const [curr_page, setPage] = useState(1);
 
-	let [gemview, setGemview] = useState<any>(null);
-	let [canvas_sign, setCanvas] = useState<any>(null);
-
-	let [capture_sign, setCapture] = useState<any>(null);
+	var [gemview, setGemview] = useState<any>(null);
+	var [canvas_sign, setCanvas] = useState<any>(null);
+	var [global, setGlobal] = useState<any>(null);
+	var [capture_sign, setCapture] = useState<any>(null);
 	const [files, setFiles] = useState<File | null>(null);
 	const [dragging, dragHandler] = useDisclosure(false);
 	const { ref, width, height } = useElementSize();
@@ -47,11 +48,12 @@ function ClientSideTopaz() {
 
 		var script = document.createElement("script");
 		script.src = url.current;
-		script.onload = () => {
+		script.onload = async () => {
 			if (window.Topaz) {
+				console.log(window.Topaz);
+				setGlobal(window.Topaz.Global);
 				setGemview(window.Topaz.GemView);
 				setCanvas(window.Topaz.Canvas.Sign);
-
 				setCapture(window.Topaz.SignatureCaptureWindow.Sign); // Assuming 'Topaz' is now available on the 'window' object
 			}
 		};
@@ -108,7 +110,7 @@ function ClientSideTopaz() {
 	}
 
 	function addSigElement(event: any, docScale: number | undefined) {
-		if (pageRef.current && event.target.dir == "ltr" && docScale) {
+		if (pageRef.current && event.target.dir == "ltr" && docScale && !pushed) {
 			const rect = pageRef.current.getBoundingClientRect();
 			const x = event.clientX - rect.left * docScale; // x position within the element.
 			const y = event.clientY - rect.top * docScale; // y position within the element.
@@ -127,18 +129,29 @@ function ClientSideTopaz() {
 
 	const sig_els = sigs_b64.map((sig, i) => (
 		<SignatureRnD
-			docScale={sig?.scale}
 			dragging={dragHandler}
 			key={`signatureRnd-${i}`}
 			index={i}
 			dims={{ width: sig.width, height: sig.height }}
 			coords={{ x: sig.x, y: sig.y }}
 			pushed={pushed}
+			pushedToggle={handlers.toggle}
 			sigsHandler={sigsHandler}
 			canvas_sign={canvas_sign}
 			capture_sign={capture_sign}
 		/>
 	));
+
+	if (global) {
+		global.GetDeviceStatus().then((status: Number) => {
+			console.log(status);
+		});
+		global.Connect().then((status: String) => {
+			console.log(
+				(status = 1 ? "Connected to Topaz" : "Error COnnection to Topaz")
+			);
+		});
+	}
 
 	return (
 		<Box className={styles.topaz_container}>
@@ -147,16 +160,6 @@ function ClientSideTopaz() {
 				data-pushed={pushed}
 				className={styles.topaz_document_container}
 			>
-				{/* {files && (
-				<div className={"preview"}>
-				<Document file={files}>
-				<Thumbnail
-				pageNumber={curr_page}
-				scale={0.1}
-				/>
-				</Document>
-				</div>
-			)} */}
 				<div
 					className={styles.document}
 					ref={ref}
@@ -168,7 +171,7 @@ function ClientSideTopaz() {
 						>
 							<ScrollArea
 								h="100vh"
-								w={width}
+								w={1100}
 							>
 								<div
 									ref={pageRef}
@@ -196,6 +199,7 @@ function ClientSideTopaz() {
 					docScale={docScale}
 					sigs_b64={sigs_b64}
 					pushDocument={pushDocument}
+					pushedToggle={handlers.toggle}
 					files={files}
 					setFiles={setFiles}
 					pushOperator={pushOperator}
@@ -209,16 +213,6 @@ function ClientSideTopaz() {
 			>
 				This
 			</Button>
-			<NumberInput
-				className={styles.scale}
-				value={docScale}
-				step={0.05}
-				stepHoldDelay={500}
-				stepHoldInterval={100}
-				onChange={(value) => {
-					setDocScale(Number(value));
-				}}
-			/>
 		</Box>
 	);
 }
