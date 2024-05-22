@@ -15,6 +15,9 @@
 }
 
 .control_group {
+    &[data-pushed="true"]{
+        display: none;
+    }
     position: absolute;
     padding-top: 0.25rem;
     top: 100%;

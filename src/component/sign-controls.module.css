@@ -4,16 +4,21 @@
 	background-color:#FFFCF2;
 	padding-top: 8rem;
 	/* height: 100%; */ /* removed to allow stretch to occup */
-	width: 346px;
+	/* width: 346px; */
 	display: flex;
+    flex: 0 0 346px;
     box-shadow: 0 4px 16px 0 rgba(99,99,99,.5);
 	flex-direction: column;
 	align-items: center;
 	&[data-file="false"] {
+        flex: 0 0 100vw;
         width: 100vw;
         height: 100vh;
 		justify-content: center;
 	}
+    &[data-pushed="true"] {
+        display: none;
+    }
 }
 
 .button {

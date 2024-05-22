@@ -12,7 +12,7 @@ import {
 import { useResizeObserver } from "@mantine/hooks";
 function SignatureRnD({
 	pushed,
-	docScale,
+	pushedToggle,
 	capture_sign,
 	coords: { x, y },
 	index,
@@ -20,11 +20,11 @@ function SignatureRnD({
 	dims: { width, height },
 	dragging,
 }: {
-	docScale: number | undefined;
 	dragging: any;
 	sigsHandler: any;
 	index: number;
 	pushed: boolean;
+	pushedToggle: () => void;
 	canvas_sign: any;
 	capture_sign: any;
 	coords: { x: number; y: number };
@@ -106,17 +106,22 @@ function SignatureRnD({
 			enableResizing={{
 				bottom: false,
 				bottomLeft: false,
-				bottomRight: true,
+				bottomRight: !pushed,
 				left: false,
 				right: false,
 				top: false,
 				topLeft: false,
 				topRight: false,
 			}}
+			disableDragging={pushed}
 			lockAspectRatio={true}
-			resizeHandleComponent={{
-				bottomRight: <IconResize size={10} />,
-			}}
+			resizeHandleComponent={
+				pushed
+					? undefined
+					: {
+							bottomRight: <IconResize size={10} />,
+					  }
+			}
 			resizeHandleClasses={{ bottomRight: styles.resizer }}
 			onClick={(e: any) => {
 				e.stopPropagation();
@@ -134,7 +139,10 @@ function SignatureRnD({
 				{/* Fallback Content */}
 				Your browser does not support the canvas element.
 			</canvas>
-			<div className={`${styles.control_group}`}>
+			<div
+				data-pushed={pushed}
+				className={`${styles.control_group}`}
+			>
 				<ActionIcon
 					variant="subtle"
 					className={`${styles.control}`}
@@ -152,7 +160,6 @@ function SignatureRnD({
 				>
 					<IconDragDrop />
 				</ActionIcon>
-				<Text>{`${x}, ${y}`}</Text>
 			</div>
 		</Rnd>
 	);
