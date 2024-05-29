@@ -1,6 +1,7 @@
 "use client";
 
 import {
+	ActionIcon,
 	Box,
 	Button,
 	NumberInput,
@@ -11,12 +12,12 @@ import { useDisclosure, useElementSize, useListState } from "@mantine/hooks";
 import { saveAs } from "file-saver";
 import { PDFDocument } from "pdf-lib";
 import { useEffect, useRef, useState } from "react";
-import { Document, Page, Thumbnail, pdfjs } from "react-pdf";
+import { Document, Page, pdfjs } from "react-pdf";
 import SignControls from "./sign-controls";
 import SignatureRnD from "./signature-rnd";
 import styles from "./client-side-topaz.module.css";
 import { Sig } from "./types";
-import { setGlobal } from "next/dist/trace";
+import { IconCircleDashedCheck } from "@tabler/icons-react";
 
 function ClientSideTopaz() {
 	const [pushed, handlers] = useDisclosure(false);
@@ -35,10 +36,15 @@ function ClientSideTopaz() {
 	const [files, setFiles] = useState<File | null>(null);
 	const [dragging, dragHandler] = useDisclosure(false);
 	const { ref, width, height } = useElementSize();
-	const [docScale, setDocScale] = useState<number | undefined>(1);
 
 	// Load the PDF.js library from cdn
-	pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
+	pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+
+	//Loads library from npm package
+	// pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+	// 	"pdfjs-dist/build/pdf.worker.min.mjs",
+	// 	import.meta.url
+	// ).toString();
 
 	// Loads topaz object from extension wrapper
 	useEffect(() => {
@@ -50,7 +56,6 @@ function ClientSideTopaz() {
 		script.src = url.current;
 		script.onload = async () => {
 			if (window.Topaz) {
-				console.log(window.Topaz);
 				setGlobal(window.Topaz.Global);
 				setGemview(window.Topaz.GemView);
 				setCanvas(window.Topaz.Canvas.Sign);
@@ -59,13 +64,23 @@ function ClientSideTopaz() {
 		};
 
 		document.body.appendChild(script);
-	}, []);
+
+		if (global) {
+			global.GetDeviceStatus().then((status: Number) => {
+				console.log(status);
+			});
+			global.Connect().then((status: Number) => {
+				console.log(
+					status == 1 ? "Connected to Topaz" : "Error COnnection to Topaz"
+				);
+			});
+		}
+	}, [global]);
 
 	async function pushOperator() {
-		console.log(window);
 		setOperator(window.open("/operator", "ctrlOperator"));
-		await gemview.CloseIdleScreen();
-		await gemview.PushCurrentTab();
+		// await gemview.CloseIdleScreen();
+		// await gemview.PushCurrentTab();
 		handlers.toggle();
 	}
 
@@ -88,7 +103,7 @@ function ClientSideTopaz() {
 			const pages = doc.getPages();
 			const firstPage = pages[0];
 			const { width: docw, height: doch } = firstPage.getSize();
-			const scale = docw / width;
+			const scale = docw / 1100;
 			sigs_b64.map(async (sig, i) => {
 				const image = await doc.embedPng(sig.b64);
 
@@ -109,20 +124,19 @@ function ClientSideTopaz() {
 		}
 	}
 
-	function addSigElement(event: any, docScale: number | undefined) {
-		if (pageRef.current && event.target.dir == "ltr" && docScale && !pushed) {
+	function addSigElement(event: any) {
+		if (pageRef.current && event.target.dir == "ltr" && 1 && !pushed) {
 			const rect = pageRef.current.getBoundingClientRect();
-			const x = event.clientX - rect.left * docScale; // x position within the element.
-			const y = event.clientY - rect.top * docScale; // y position within the element.
+			const x = event.clientX - rect.left * 1; // x position within the element.
+			const y = event.clientY - rect.top * 1; // y position within the element.
 
-			console.log(`Click position within element: x: ${x}, y: ${y}`);
 			sigsHandler.append({
 				b64: "",
 				x: x,
 				y: y,
 				width: 300,
 				height: 150,
-				scale: docScale,
+				scale: 1,
 			});
 		}
 	}
@@ -142,17 +156,6 @@ function ClientSideTopaz() {
 		/>
 	));
 
-	if (global) {
-		global.GetDeviceStatus().then((status: Number) => {
-			console.log(status);
-		});
-		global.Connect().then((status: String) => {
-			console.log(
-				(status = 1 ? "Connected to Topaz" : "Error COnnection to Topaz")
-			);
-		});
-	}
-
 	return (
 		<Box className={styles.topaz_container}>
 			<Box
@@ -169,34 +172,30 @@ function ClientSideTopaz() {
 							file={files}
 							renderMode="canvas"
 						>
-							<ScrollArea
-								h="100vh"
-								w={1100}
+							<div
+								ref={pageRef}
+								className={styles.canvas_container}
+								onMouseUp={(e) => !dragging && addSigElement(e)}
 							>
-								<div
-									ref={pageRef}
-									className="canvas_container"
-									onMouseUp={(e) => !dragging && addSigElement(e, docScale)}
+								<Page
+									renderTextLayer={false}
+									renderAnnotationLayer={false}
+									pageNumber={curr_page}
+									width={1100}
+									// scale={1}
+									renderForms={false}
 								>
-									<Page
-										renderTextLayer={false}
-										renderAnnotationLayer={false}
-										pageNumber={curr_page}
-										width={width}
-										scale={docScale}
-										renderForms={false}
-									>
-										{sig_els}
-									</Page>
-								</div>
-							</ScrollArea>
+									{sig_els}
+								</Page>
+							</div>
 						</Document>
 					)}
 				</div>
 			</Box>
 			{!pushed && (
 				<SignControls
-					docScale={docScale}
+					sigs_handler={sigsHandler}
+					docScale={1}
 					sigs_b64={sigs_b64}
 					pushDocument={pushDocument}
 					pushedToggle={handlers.toggle}
@@ -206,13 +205,18 @@ function ClientSideTopaz() {
 					width={width}
 				/>
 			)}
-			<Button
+			<ActionIcon
+				size={"10em"}
+				variant="transparent"
 				data-pushed={pushed}
 				className={styles.pushed}
 				onClick={handleReturn}
 			>
-				This
-			</Button>
+				<IconCircleDashedCheck
+					color="green"
+					size={"auto"}
+				/>
+			</ActionIcon>
 		</Box>
 	);
 }

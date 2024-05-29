@@ -32,6 +32,7 @@ function SignatureRnD({
 }) {
 	const handleSign = async (e: any) => {
 		e.stopPropagation();
+		if (!pushed) return;
 		const el = e.target;
 		const ctx = el.getContext("2d");
 		await capture_sign.StartSign();
@@ -50,7 +51,14 @@ function SignatureRnD({
 					g = pix[i + 1],
 					b = pix[i + 2];
 
-				if (r == 255 && g == 255 && b == 255) {
+				if (
+					r >= 230 &&
+					r <= 255 &&
+					g >= 230 &&
+					g <= 255 &&
+					b >= 230 &&
+					b <= 255
+				) {
 					// Change the white to the new color.
 					pix[i] = newColor.r;
 					pix[i + 1] = newColor.g;
@@ -64,8 +72,6 @@ function SignatureRnD({
 			//toDataURL returns b64 png string after re-drawn
 			sigsHandler.setItemProp(index, "b64", el.toDataURL());
 		};
-		await capture_sign.SetPenDetails("#000000", 5);
-		console.log(await capture_sign.SetImageDetails(2, 150, 50, true, true, 0));
 		const b64 = await capture_sign.GetSignatureImage();
 
 		img.src = "data:image/png;base64," + b64;
@@ -133,7 +139,8 @@ function SignatureRnD({
 			dragHandleClassName={`dragHandle-${index}`}
 		>
 			<canvas
-				className={styles.canvas}
+				data-pushed={pushed}
+				className={`${styles.canvas}  dragHandle-${index}`}
 				onClick={handleSign}
 			>
 				{/* Fallback Content */}
@@ -151,14 +158,7 @@ function SignatureRnD({
 						sigsHandler.remove(index);
 					}}
 				>
-					<IconTrashX />
-				</ActionIcon>
-				<ActionIcon
-					variant="subtle"
-					className={`${styles.control} dragHandle-${index}`}
-					onClick={(e) => e.stopPropagation()}
-				>
-					<IconDragDrop />
+					<IconTrashX color="red" />
 				</ActionIcon>
 			</div>
 		</Rnd>

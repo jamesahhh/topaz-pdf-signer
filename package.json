@@ -15,7 +15,7 @@
 		"@mantine/hooks": "^7.6.2",
 		"@mantine/notifications": "^7.6.2",
 		"@pdftron/pdfjs-express-viewer": "^8.7.4",
-		"@tabler/icons-react": "^3.1.0",
+		"@tabler/icons-react": "^3.5.0",
 		"@types/pdfjs-dist": "^2.10.378",
 		"docx": "^8.5.0",
 		"docx-templates": "^4.11.4",

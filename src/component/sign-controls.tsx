@@ -22,10 +22,12 @@ function SignControls({
 	pushDocument,
 	pushedToggle,
 	sigs_b64,
+	sigs_handler,
 	width,
 	docScale,
 }: {
 	sigs_b64: Sig[];
+	sigs_handler: any;
 	files: File | null;
 	pushDocument: (
 		file: File | null,
@@ -87,6 +89,10 @@ function SignControls({
 					color="#403D39"
 					autoContrast
 					radius={"lg"}
+					onClick={() => {
+						setFiles(null);
+						sigs_handler.setState([]);
+					}}
 				>
 					{files ? "Clear" : "Clear PDF Document"}
 				</Button>
@@ -99,7 +105,7 @@ function SignControls({
 				rightSection={<IconDeviceDesktopShare />}
 				onClick={pushOperator}
 			>
-				Push Form to Signer
+				Open Operator Window
 			</Button>
 			<Button
 				className={styles.button}
@@ -108,7 +114,6 @@ function SignControls({
 				data-file={files != null && sigs_b64.length > 0}
 				onClick={() => {
 					pushDocument(files, width, docScale);
-					pushedToggle();
 				}}
 				rightSection={<IconScript />}
 			>

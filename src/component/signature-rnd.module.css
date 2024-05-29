@@ -3,6 +3,8 @@
     width: 100%;
     height: 100%;
     opacity: 0.7;
+    flex-grow: 0;
+    flex-shrink: 1;
     /* background-color: beige; */
     border-color: lightgrey;
     border-style: dashed;
@@ -10,6 +12,11 @@
     &:hover {
         /* border-style: solid; */
         opacity: 100%;
+        border-color: black;
+    }
+
+    &[data-pushed="true"] {
+        background-color: rgba(62, 222, 67, 0.349);
         border-color: black;
     }
 }
