@@ -18,12 +18,13 @@ import SignatureRnD from "./signature-rnd";
 import styles from "./client-side-topaz.module.css";
 import { Sig } from "./types";
 import { IconCircleDashedCheck } from "@tabler/icons-react";
+import { DndContext } from "@dnd-kit/core";
 
 function ClientSideTopaz() {
 	const [pushed, handlers] = useDisclosure(false);
 	const [sigs_b64, sigsHandler] = useListState<Sig>([]);
 	const [operator, setOperator] = useState<any>(null);
-
+	const [value, setValue] = useState<string>("mouse");
 	var url = useRef<any>();
 	const handlersRef = useRef<NumberInputHandlers>(null);
 	const pageRef = useRef<HTMLDivElement>(null);
@@ -87,7 +88,7 @@ function ClientSideTopaz() {
 	async function handleReturn() {
 		await gemview.RevertCurrentTab(1);
 		operator.close();
-		gemview.LoadIdleScreen();
+		await gemview.LoadIdleScreen();
 		handlers.toggle();
 	}
 
@@ -167,33 +168,39 @@ function ClientSideTopaz() {
 					className={styles.document}
 					ref={ref}
 				>
-					{files && (
-						<Document
-							file={files}
-							renderMode="canvas"
-						>
-							<div
-								ref={pageRef}
-								className={styles.canvas_container}
-								onMouseUp={(e) => !dragging && addSigElement(e)}
+					<DndContext autoScroll={true}>
+						{files && (
+							<Document
+								file={files}
+								renderMode="canvas"
 							>
-								<Page
-									renderTextLayer={false}
-									renderAnnotationLayer={false}
-									pageNumber={curr_page}
-									width={1100}
-									// scale={1}
-									renderForms={false}
+								<div
+									ref={pageRef}
+									className={styles.canvas_container}
+									onMouseUp={(e) =>
+										!dragging && value === "signatures" && addSigElement(e)
+									}
 								>
-									{sig_els}
-								</Page>
-							</div>
-						</Document>
-					)}
+									<Page
+										renderTextLayer={false}
+										renderAnnotationLayer={false}
+										pageNumber={curr_page}
+										width={1100}
+										// scale={1}
+										renderForms={false}
+									>
+										{sig_els}
+									</Page>
+								</div>
+							</Document>
+						)}
+					</DndContext>
 				</div>
 			</Box>
 			{!pushed && (
 				<SignControls
+					value={value}
+					setValue={setValue}
 					sigs_handler={sigsHandler}
 					docScale={1}
 					sigs_b64={sigs_b64}
