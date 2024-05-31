@@ -23,7 +23,7 @@ function ClientSideTopaz() {
 	const [pushed, handlers] = useDisclosure(false);
 	const [sigs_b64, sigsHandler] = useListState<Sig>([]);
 	const [operator, setOperator] = useState<any>(null);
-
+	const [value, setValue] = useState<string>("mouse");
 	var url = useRef<any>();
 	const handlersRef = useRef<NumberInputHandlers>(null);
 	const pageRef = useRef<HTMLDivElement>(null);
@@ -86,6 +86,7 @@ function ClientSideTopaz() {
 
 	async function handleReturn() {
 		await gemview.RevertCurrentTab(1);
+		setValue("mouse");
 		operator.close();
 		gemview.LoadIdleScreen();
 		handlers.toggle();
@@ -175,7 +176,9 @@ function ClientSideTopaz() {
 							<div
 								ref={pageRef}
 								className={styles.canvas_container}
-								onMouseUp={(e) => !dragging && addSigElement(e)}
+								onMouseUp={(e) =>
+									!dragging && value === "signatures" && addSigElement(e)
+								}
 							>
 								<Page
 									renderTextLayer={false}
@@ -194,6 +197,8 @@ function ClientSideTopaz() {
 			</Box>
 			{!pushed && (
 				<SignControls
+					value={value}
+					setValue={setValue}
 					sigs_handler={sigsHandler}
 					docScale={1}
 					sigs_b64={sigs_b64}

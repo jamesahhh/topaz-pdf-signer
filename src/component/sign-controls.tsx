@@ -4,18 +4,23 @@ import {
 	FileButton,
 	Group,
 	List,
+	SegmentedControl,
 	Text,
 	Title,
 } from "@mantine/core";
 import {
 	IconDeviceDesktopShare,
 	IconFileUpload,
+	IconMouse,
 	IconScript,
+	IconSignature,
 } from "@tabler/icons-react";
 import styles from "./sign-controls.module.css";
 import { Sig } from "./types";
 
 function SignControls({
+	value,
+	setValue,
 	setFiles,
 	pushOperator,
 	files,
@@ -26,6 +31,8 @@ function SignControls({
 	width,
 	docScale,
 }: {
+	value: string;
+	setValue: (payload: string) => void;
 	sigs_b64: Sig[];
 	sigs_handler: any;
 	files: File | null;
@@ -45,6 +52,20 @@ function SignControls({
 			data-file={files !== null}
 			className={styles.sign_controls}
 		>
+			{files && (
+				<SegmentedControl
+					transitionDuration={500}
+					transitionTimingFunction="linear"
+					value={value}
+					onChange={setValue}
+					color="#C94277"
+					data={[
+						{ value: "mouse", label: <IconMouse /> },
+						{ value: "signatures", label: <IconSignature /> },
+					]}
+				></SegmentedControl>
+			)}
+
 			<Text
 				// data-file={files != null}
 				className={styles.instructions}
