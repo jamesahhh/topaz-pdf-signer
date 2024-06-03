@@ -5,6 +5,7 @@ import {
 	Group,
 	List,
 	SegmentedControl,
+	Stack,
 	Text,
 	Title,
 } from "@mantine/core";
@@ -85,63 +86,68 @@ function SignControls({
 				</List.Item>
 				<List.Item>Resize signature with its bottom right corner</List.Item>
 			</List>
-			<Group p="md">
-				<FileButton
-					onChange={(files) => {
-						setFiles(files);
-						sigs_handler.setState([]);
-					}}
-					accept="application/pdf"
-				>
-					{(props) => (
-						<Button
-							data-file={files != null}
-							radius={"lg"}
-							color="#EB5E28"
-							autoContrast
-							variant="filled"
-							rightSection={<IconFileUpload />}
-							{...props}
-						>
-							{files ? "New" : "Select PDF Document"}
-						</Button>
-					)}
-				</FileButton>
+			<Stack
+				justify="space-around"
+				align="center"
+			>
+				<Group p="md">
+					<FileButton
+						onChange={(files) => {
+							setFiles(files);
+							sigs_handler.setState([]);
+						}}
+						accept="application/pdf"
+					>
+						{(props) => (
+							<Button
+								data-file={files != null}
+								radius={"lg"}
+								color="#EB5E28"
+								autoContrast
+								variant="filled"
+								rightSection={<IconFileUpload />}
+								{...props}
+							>
+								{files ? "New" : "Select PDF Document"}
+							</Button>
+						)}
+					</FileButton>
+					<Button
+						data-file={files != null}
+						className={styles.button}
+						color="#403D39"
+						autoContrast
+						radius={"lg"}
+						onClick={() => {
+							sigs_handler.setState([]);
+						}}
+					>
+						{files ? "Clear" : "Clear PDF Document"}
+					</Button>
+				</Group>
 				<Button
-					data-file={files != null}
 					className={styles.button}
-					color="#403D39"
-					autoContrast
+					data-file={files != null}
+					variant="filled"
 					radius={"lg"}
-					onClick={() => {
-						sigs_handler.setState([]);
-					}}
+					rightSection={<IconDeviceDesktopShare />}
+					onClick={pushOperator}
 				>
-					{files ? "Clear" : "Clear PDF Document"}
+					Open Operator Window
 				</Button>
-			</Group>
-			<Button
-				className={styles.button}
-				data-file={files != null}
-				variant="filled"
-				radius={"lg"}
-				rightSection={<IconDeviceDesktopShare />}
-				onClick={pushOperator}
-			>
-				Open Operator Window
-			</Button>
-			<Button
-				className={styles.button}
-				variant="filled"
-				color="red"
-				data-file={files != null && sigs_b64.length > 0}
-				onClick={() => {
-					pushDocument(files, width, docScale);
-				}}
-				rightSection={<IconScript />}
-			>
-				Save Document
-			</Button>
+				<Button
+					className={styles.button}
+					variant="filled"
+					color="red"
+					data-file={files != null && sigs_b64.length > 0}
+					onClick={() => {
+						pushDocument(files, width, docScale);
+					}}
+					rightSection={<IconScript />}
+				>
+					Save Document
+				</Button>
+			</Stack>
 			<div
 				className={[styles.logo, styles["logo-holder"]].join(" ")}
 				data-file={files !== null}

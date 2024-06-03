@@ -7,6 +7,7 @@ import {
 	SimpleGrid,
 	Tooltip,
 	Group,
+	Mark,
 } from "@mantine/core";
 import classes from "./NotFoundImage.module.css";
 import {
@@ -40,6 +41,9 @@ export function NotFoundImage({ reset }: { reset: () => void }) {
 						Page you are trying to open is reliant on a 3rd Party extension.
 						Click your browsers icon below to start the installation.
 					</Text>
+					<Text align-self="right">
+						<Mark color="#c94277">Refresh if installed previously</Mark>
+					</Text>
 					<Group
 						justify="space-evenly"
 						py="sm"
@@ -68,8 +72,8 @@ export function NotFoundImage({ reset }: { reset: () => void }) {
 						// c="dimmed"
 						size="lg"
 					>
-						Click below and unzip the installers for the Topaz Systems Inc.
-						Gemview Tablet to function with this app
+						Installers for the Gemview Tablet to function with this app. Click
+						below and run the install.bat found within...
 					</Text>
 					<Button
 						component="a"
@@ -84,11 +88,13 @@ export function NotFoundImage({ reset }: { reset: () => void }) {
 						Get Drivers Required for Extension
 					</Button>
 				</div>
-				<Image
-					alt=""
-					src={"/FittingPiece.svg"}
-					className={classes.desktopImage}
-				/>
+				<div>
+					<Image
+						alt=""
+						src={"/FittingPiece.svg"}
+						className={classes.desktopImage}
+					/>
+				</div>
 			</SimpleGrid>
 		</Container>
 	);
