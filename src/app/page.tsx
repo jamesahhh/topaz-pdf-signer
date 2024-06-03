@@ -10,6 +10,12 @@ declare global {
 	}
 }
 
+class TopazError extends Error {
+	constructor(message: string) {
+		super(message);
+		this.name = "TOPAZ_ERROR";
+	}
+}
 
 export default function Home() {
 	useEffect(() => {
@@ -17,7 +23,7 @@ export default function Home() {
 			"SigPlusExtLiteExtension-installed"
 		);
 		if (extInstalled != "true") {
-			throw Error("Extension must be installed");
+			throw new TopazError("Extension Missing");
 		} else {
 		}
 	});

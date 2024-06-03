@@ -16,7 +16,7 @@ import {
 	IconBrandFirefox,
 } from "@tabler/icons-react";
 
-export function NotFoundImage({ reset }: { reset: () => void }) {
+export function NotFoundImage() {
 	const chromeExt =
 		"https://chrome.google.com/webstore/detail/topaz-sigplusextlite-back/dhcpobccjkdnmibckgpejmbpmpembgco";
 	const firefoxExt =
@@ -83,7 +83,6 @@ export function NotFoundImage({ reset }: { reset: () => void }) {
 						size="md"
 						mt="xl"
 						className={classes.control}
-						onClick={() => reset()}
 					>
 						Get Drivers Required for Extension
 					</Button>
