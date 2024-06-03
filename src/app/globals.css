@@ -38,6 +38,12 @@
   --callout-border-rgb: 172, 175, 176;
   --card-rgb: 180, 185, 188;
   --card-border-rgb: 131, 134, 135;
+
+  --sea-green: #388659;
+	--black-olive: #403d39;
+	--fuschia-rose: #c94277;
+	--timberwolf: #ccc5b9;
+	--flame: #eb5e28;
 }
 
 @media (prefers-color-scheme: dark) {
