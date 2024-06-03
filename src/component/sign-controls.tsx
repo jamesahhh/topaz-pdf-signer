@@ -4,6 +4,7 @@ import {
 	FileButton,
 	Group,
 	List,
+	SegmentedControl,
 	Text,
 	Title,
 } from "@mantine/core";
@@ -52,6 +53,20 @@ function SignControls({
 			data-file={files !== null}
 			className={styles.sign_controls}
 		>
+			{files && (
+				<SegmentedControl
+					transitionDuration={500}
+					transitionTimingFunction="linear"
+					value={value}
+					onChange={setValue}
+					color="#C94277"
+					data={[
+						{ value: "mouse", label: <IconMouse /> },
+						{ value: "signatures", label: <IconSignature /> },
+					]}
+				></SegmentedControl>
+			)}
+
 			<Text
 				// data-file={files != null}
 				className={styles.instructions}
@@ -72,7 +87,10 @@ function SignControls({
 			</List>
 			<Group p="md">
 				<FileButton
-					onChange={setFiles}
+					onChange={(files) => {
+						setFiles(files);
+						sigs_handler.setState([]);
+					}}
 					accept="application/pdf"
 				>
 					{(props) => (
@@ -96,7 +114,6 @@ function SignControls({
 					autoContrast
 					radius={"lg"}
 					onClick={() => {
-						setFiles(null);
 						sigs_handler.setState([]);
 					}}
 				>

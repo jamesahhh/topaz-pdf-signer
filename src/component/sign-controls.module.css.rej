@@ -1,0 +1,36 @@
+diff a/src/component/sign-controls.module.css b/src/component/sign-controls.module.css	(rejected hunks)
+@@ -34,25 +34,28 @@
+ }
+ 
+ 
+-.logo h3 {
+-    color: black;
++.logo {
++    & h3 {
++    color: #403D39;
+     font-weight: 300;
+     font-size: 50px;
+     line-height: 0.65;
+     font-family: 'Lobster', cursive;
+-}
+-.logo p {
++    }
++
++    & p {
+     font-size: 14px;
+     margin-left: 50px;
+-    color: #A2AEBB;
++    color: #388659;
+     font-weight: 400;
+     text-transform: capitalize;
+     font-style: italic;
+     font-family: 'Mansalva', cursive;
++    }
+ }
+ 
+ .logo-holder {
+-    padding: .5rem;
++    padding: 1.5rem;
+     &[data-file="false"] {
+         position: absolute;
+         top: 20px;
