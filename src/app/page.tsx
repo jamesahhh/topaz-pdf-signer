@@ -13,12 +13,12 @@ declare global {
 
 export default function Home() {
 	useEffect(() => {
-		if (
-			document.documentElement.getAttribute(
-				"SigPlusExtLiteExtension-installed"
-			) != "true"
-		) {
+		var extInstalled = document.documentElement.getAttribute(
+			"SigPlusExtLiteExtension-installed"
+		);
+		if (extInstalled != "true") {
 			throw Error("Extension must be installed");
+		} else {
 		}
 	});
 

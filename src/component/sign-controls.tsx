@@ -4,8 +4,6 @@ import {
 	FileButton,
 	Group,
 	List,
-	SegmentedControl,
-	Stack,
 	Text,
 	Title,
 } from "@mantine/core";
@@ -18,6 +16,7 @@ import {
 } from "@tabler/icons-react";
 import styles from "./sign-controls.module.css";
 import { Sig } from "./types";
+import { useState } from "react";
 
 function SignControls({
 	value,
@@ -53,20 +52,6 @@ function SignControls({
 			data-file={files !== null}
 			className={styles.sign_controls}
 		>
-			{files && (
-				<SegmentedControl
-					transitionDuration={500}
-					transitionTimingFunction="linear"
-					value={value}
-					onChange={setValue}
-					color="#C94277"
-					data={[
-						{ value: "mouse", label: <IconMouse /> },
-						{ value: "signatures", label: <IconSignature /> },
-					]}
-				></SegmentedControl>
-			)}
-
 			<Text
 				// data-file={files != null}
 				className={styles.instructions}
@@ -83,70 +68,63 @@ function SignControls({
 				<List.Item>
 					Click anywhere on the document to add a signature field
 				</List.Item>
-				<List.Item>Resize signature with the bottom right corner</List.Item>
-				<List.Item>Move/Delete with the Icons on the bottom left</List.Item>
+				<List.Item>Resize signature with its bottom right corner</List.Item>
 			</List>
-			<Stack justify="space-around">
-				<Group>
-					<FileButton
-						onChange={(file) => {
-							setFiles(file);
-							if (sigs_b64.length > 0) sigs_handler.setState([]);
-						}}
-						accept="application/pdf"
-					>
-						{(props) => (
-							<Button
-								data-file={files != null}
-								radius={"lg"}
-								color="#EB5E28"
-								autoContrast
-								variant="filled"
-								rightSection={<IconFileUpload />}
-								{...props}
-							>
-								{files ? "New" : "Select PDF Document"}
-							</Button>
-						)}
-					</FileButton>
-					<Button
-						data-file={files != null}
-						className={styles.button}
-						color="#403D39"
-						autoContrast
-						radius={"lg"}
-						onClick={() => {
-							// setFiles(null);
-							sigs_handler.setState([]);
-						}}
-					>
-						{files ? "Clear" : "Clear PDF Document"}
-					</Button>
-				</Group>
+			<Group p="md">
+				<FileButton
+					onChange={setFiles}
+					accept="application/pdf"
+				>
+					{(props) => (
+						<Button
+							data-file={files != null}
+							radius={"lg"}
+							color="#EB5E28"
+							autoContrast
+							variant="filled"
+							rightSection={<IconFileUpload />}
+							{...props}
+						>
+							{files ? "New" : "Select PDF Document"}
+						</Button>
+					)}
+				</FileButton>
 				<Button
-					className={styles.button}
 					data-file={files != null}
-					variant="filled"
-					radius={"lg"}
-					rightSection={<IconDeviceDesktopShare />}
-					onClick={pushOperator}
-				>
-					Open Operator Window
-				</Button>
-				<Button
-					radius={"lg"}
 					className={styles.button}
-					variant="filled"
-					color="red"
-					data-file={files != null && sigs_b64.length > 0}
+					color="#403D39"
+					autoContrast
+					radius={"lg"}
 					onClick={() => {
-						pushDocument(files, width, docScale);
+						setFiles(null);
+						sigs_handler.setState([]);
 					}}
-					rightSection={<IconScript />}
 				>
-					Save Document
+					{files ? "Clear" : "Clear PDF Document"}
 				</Button>
-			</Stack>
+			</Group>
+			<Button
+				className={styles.button}
+				data-file={files != null}
+				variant="filled"
+				radius={"lg"}
+				rightSection={<IconDeviceDesktopShare />}
+				onClick={pushOperator}
+			>
+				Open Operator Window
+			</Button>
+			<Button
+				className={styles.button}
+				variant="filled"
+				color="red"
+				data-file={files != null && sigs_b64.length > 0}
+				onClick={() => {
+					pushDocument(files, width, docScale);
+				}}
+				rightSection={<IconScript />}
+			>
+				Save Document
+			</Button>
 			<div
 				className={[styles.logo, styles["logo-holder"]].join(" ")}
 				data-file={files !== null}

@@ -18,6 +18,7 @@ import SignatureRnD from "./signature-rnd";
 import styles from "./client-side-topaz.module.css";
 import { Sig } from "./types";
 import { IconCircleDashedCheck } from "@tabler/icons-react";
+import { DndContext } from "@dnd-kit/core";
 
 function ClientSideTopaz() {
 	const [pushed, handlers] = useDisclosure(false);
@@ -88,7 +89,7 @@ function ClientSideTopaz() {
 		await gemview.RevertCurrentTab(1);
 		setValue("mouse");
 		operator.close();
-		gemview.LoadIdleScreen();
+		await gemview.LoadIdleScreen();
 		handlers.toggle();
 	}
 

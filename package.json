@@ -10,6 +10,7 @@
 		"post": "node src/util/copy-webviewer-files.js"
 	},
 	"dependencies": {
+		"@dnd-kit/core": "^6.1.0",
 		"@mantine/core": "^7.6.2",
 		"@mantine/dropzone": "^7.6.2",
 		"@mantine/hooks": "^7.6.2",

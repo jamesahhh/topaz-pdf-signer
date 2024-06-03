@@ -10,6 +10,7 @@ import {
 	IconTrashX,
 } from "@tabler/icons-react";
 import { useResizeObserver } from "@mantine/hooks";
+import { useDraggable } from "@dnd-kit/core";
 function SignatureRnD({
 	pushed,
 	pushedToggle,
@@ -103,6 +104,9 @@ function SignatureRnD({
 		e.stopPropagation();
 		dragging.toggle();
 	};
+	const { attributes, listeners, setNodeRef, transform } = useDraggable({
+		id: "signatureDndKit-" + index,
+	});
 
 	return (
 		<Rnd
@@ -139,6 +143,9 @@ function SignatureRnD({
 			dragHandleClassName={`dragHandle-${index}`}
 		>
 			<canvas
+				ref={setNodeRef}
+				{...listeners}
+				{...attributes}
 				data-pushed={pushed}
 				className={`${styles.canvas}  dragHandle-${index}`}
 				onClick={handleSign}
