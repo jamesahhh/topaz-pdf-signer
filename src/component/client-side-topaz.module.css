@@ -3,7 +3,7 @@
 	&[data-pushed="true"] {
 		width: 68.75rem;
 		height: calc(100% - .5rem);
-		margin: 1.5rem;
+		/* margin:3rem; */
 	}
 	&[data-files="false"] {
 		display: none;
