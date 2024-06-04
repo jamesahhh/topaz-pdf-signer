@@ -78,7 +78,7 @@ export function NotFoundImage() {
 					<Button
 						component="a"
 						download=""
-						href="/installs.zip"
+						href="/INSTALL_READ_ME.zip"
 						color="#eb5e28"
 						size="md"
 						mt="xl"
