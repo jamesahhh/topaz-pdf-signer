@@ -58,7 +58,6 @@ function SignatureStepper({
 			) as HTMLCanvasElement;
 			ele?.addEventListener("mousedown", onMouseDown);
 		}
-
 		return canvas;
 	};
 

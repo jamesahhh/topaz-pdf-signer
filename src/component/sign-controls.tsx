@@ -15,9 +15,11 @@ import {
 	IconMouse,
 	IconScript,
 	IconSignature,
+	IconTextPlus,
+	IconTextSize,
 } from "@tabler/icons-react";
 import styles from "./sign-controls.module.css";
-import { Sig } from "./types";
+import { Note, Sig } from "./types";
 import { useState } from "react";
 
 function SignControls({
@@ -30,6 +32,8 @@ function SignControls({
 	pushedToggle,
 	sigs_b64,
 	sigs_handler,
+	text_area,
+	text_handler,
 	width,
 	docScale,
 }: {
@@ -37,6 +41,8 @@ function SignControls({
 	setValue: (payload: string) => void;
 	sigs_b64: Sig[];
 	sigs_handler: any;
+	text_area: Note[];
+	text_handler: any;
 	files: File | null;
 	pushDocument: (
 		file: File | null,
@@ -64,6 +70,7 @@ function SignControls({
 					data={[
 						{ value: "mouse", label: <IconMouse /> },
 						{ value: "signatures", label: <IconSignature /> },
+						{ value: "textarea", label: <IconTextSize /> },
 					]}
 				></SegmentedControl>
 			)}
@@ -120,6 +127,7 @@ function SignControls({
 						radius={"lg"}
 						onClick={() => {
 							sigs_handler.setState([]);
+							text_handler.setState([]);
 						}}
 					>
 						{files ? "Clear" : "Clear PDF Document"}
@@ -139,7 +147,9 @@ function SignControls({
 					className={styles.button}
 					variant="filled"
 					color="red"
-					data-file={files != null && sigs_b64.length > 0}
+					data-file={
+						(files != null && sigs_b64.length > 0) || text_area.length > 0
+					}
 					onClick={() => {
 						pushDocument(files, width, docScale);
 					}}
