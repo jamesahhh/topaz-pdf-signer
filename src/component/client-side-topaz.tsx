@@ -2,34 +2,42 @@
 
 import {
 	ActionIcon,
+	Affix,
 	Box,
 	Button,
 	NumberInput,
 	NumberInputHandlers,
 	ScrollArea,
+	Transition,
+	rem,
 } from "@mantine/core";
-import { useDisclosure, useElementSize, useListState } from "@mantine/hooks";
+import {
+	useCounter,
+	useDisclosure,
+	useElementSize,
+	useListState,
+} from "@mantine/hooks";
 import { saveAs } from "file-saver";
-import { PDFDocument } from "pdf-lib";
+import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { useEffect, useRef, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import SignControls from "./sign-controls";
 import SignatureRnD from "./signature-rnd";
 import styles from "./client-side-topaz.module.css";
-import { Sig } from "./types";
-import { IconCircleDashedCheck } from "@tabler/icons-react";
+import { Note, Sig } from "./types";
+import { IconArrowUp, IconCircleDashedCheck } from "@tabler/icons-react";
 import { DndContext } from "@dnd-kit/core";
+import { TextAreaRnd } from "./text-rnd";
 
 function ClientSideTopaz() {
 	const [pushed, handlers] = useDisclosure(false);
 	const [sigs_b64, sigsHandler] = useListState<Sig>([]);
+	const [text_area, textHandler] = useListState<Note>([]);
 	const [operator, setOperator] = useState<any>(null);
 	const [value, setValue] = useState<string>("mouse");
 	var url = useRef<any>();
-	const handlersRef = useRef<NumberInputHandlers>(null);
 	const pageRef = useRef<HTMLDivElement>(null);
 	const [curr_page, setPage] = useState(1);
-
 	var [gemview, setGemview] = useState<any>(null);
 	var [canvas_sign, setCanvas] = useState<any>(null);
 	var [global, setGlobal] = useState<any>(null);
@@ -102,6 +110,7 @@ function ClientSideTopaz() {
 			const result = await files.arrayBuffer(); //read file to buffer
 
 			const doc = await PDFDocument.load(result);
+			const helveticaFont = await doc.embedFont(StandardFonts.Helvetica);
 			const pages = doc.getPages();
 			const firstPage = pages[0];
 			const { width: docw, height: doch } = firstPage.getSize();
@@ -118,6 +127,19 @@ function ClientSideTopaz() {
 				});
 			});
 
+			text_area.map(async (note, i) => {
+				await firstPage.drawText(note.text, {
+					x: (note.x / docScale) * scale,
+					y:
+						doch -
+						(note.y - (3 * scale) / docScale) * scale -
+						note.fontSize * scale,
+					font: helveticaFont,
+					size: note.fontSize * scale,
+					color: rgb(0, 0.53, 0.71),
+					lineHeight: note.fontSize * scale,
+				});
+			});
 			const docBytes = await doc.save();
 
 			//convert to blob and save
@@ -132,16 +154,48 @@ function ClientSideTopaz() {
 			const x = event.clientX - rect.left * 1; // x position within the element.
 			const y = event.clientY - rect.top * 1; // y position within the element.
 
-			sigsHandler.append({
-				b64: "",
-				x: x,
-				y: y,
-				width: 300,
-				height: 150,
-				scale: 1,
-			});
+			// sigsHandler.append({
+			// 	b64: "",
+			// 	x: x,
+			// 	y: y,
+			// 	width: 300,
+			// 	height: 150,
+			// 	scale: 1,
+			// });
+			sigsHandler.append(new Sig(x, y, 300, 150, 1));
 		}
 	}
+
+	function addTextAreaElement(event: any) {
+		if (pageRef.current && event.target.dir == "ltr" && 1 && !pushed) {
+			const rect = pageRef.current.getBoundingClientRect();
+			const x = event.clientX - rect.left * 1; // x position within the element.
+			const y = event.clientY - rect.top * 1; // y position within the element.
+			// textHandler.append({
+			// 	x: x,
+			// 	y: y,
+			// 	width: 100,
+			// 	height: 80,
+			// 	text: "",
+			// 	fontSize: 22,
+			// 	lineHeight: 22,
+			// });
+			textHandler.append(new Note(x, y, 100, 80, "", 22, 22));
+		}
+	}
+
+	const text_els = text_area.map((text_obj, i) => (
+		<TextAreaRnd
+			{...{
+				pushed,
+				text_obj,
+				index: i,
+				textHandler,
+				dragging: dragHandler,
+			}}
+			key={`textAreaRnd-${i}`}
+		/>
+	));
 
 	const sig_els = sigs_b64.map((sig, i) => (
 		<SignatureRnD
@@ -173,13 +227,14 @@ function ClientSideTopaz() {
 						<Document
 							file={files}
 							renderMode="canvas"
+							onMouseUp={(e) =>
+								(!dragging && value === "signatures" && addSigElement(e)) ||
+								(!dragging && value === "textarea" && addTextAreaElement(e))
+							}
 						>
 							<div
 								ref={pageRef}
 								className={styles.canvas_container}
-								onMouseUp={(e) =>
-									!dragging && value === "signatures" && addSigElement(e)
-								}
 							>
 								<Page
 									renderTextLayer={false}
@@ -189,7 +244,7 @@ function ClientSideTopaz() {
 									// scale={1}
 									renderForms={false}
 								>
-									{sig_els}
+									{text_els.concat(sig_els)}
 								</Page>
 							</div>
 						</Document>
@@ -201,6 +256,8 @@ function ClientSideTopaz() {
 					value={value}
 					setValue={setValue}
 					sigs_handler={sigsHandler}
+					text_area={text_area}
+					text_handler={textHandler}
 					docScale={1}
 					sigs_b64={sigs_b64}
 					pushDocument={pushDocument}

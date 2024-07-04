@@ -2,8 +2,9 @@
 
 import { Rnd } from "react-rnd";
 import styles from "./signature-rnd.module.css";
-import { ActionIcon, Button, Text } from "@mantine/core";
+import { ActionIcon, Button, Text, useMantineTheme } from "@mantine/core";
 import {
+	IconArrowsMove,
 	IconDragDrop,
 	IconGripVertical,
 	IconResize,
@@ -31,6 +32,7 @@ function SignatureRnD({
 	coords: { x: number; y: number };
 	dims: { width: number; height: number };
 }) {
+	const theme = useMantineTheme();
 	const handleSign = async (e: any) => {
 		e.stopPropagation();
 		if (!pushed) return;
@@ -147,26 +149,31 @@ function SignatureRnD({
 				{...listeners}
 				{...attributes}
 				data-pushed={pushed}
-				className={`${styles.canvas}  dragHandle-${index}`}
+				className={`${styles.canvas}`}
 				onClick={handleSign}
 			>
 				{/* Fallback Content */}
 				Your browser does not support the canvas element.
 			</canvas>
 			<div
+				className={styles.controls_bottom}
 				data-pushed={pushed}
-				className={`${styles.control_group}`}
 			>
-				<ActionIcon
-					variant="subtle"
-					className={`${styles.control}`}
-					onClick={(e) => {
-						e.stopPropagation();
-						sigsHandler.remove(index);
-					}}
-				>
-					<IconTrashX color="red" />
-				</ActionIcon>
+				<IconArrowsMove
+					color={theme.colors.black_olive[7]}
+					size={20}
+					className={`dragHandle-${index}`}
+				/>
+			</div>
+			<div
+				className={styles.controls_right}
+				data-pushed={pushed}
+			>
+				<IconTrashX
+					color={theme.colors.flame[6]}
+					size={20}
+					onClick={() => sigsHandler.remove(index)}
+				/>
 			</div>
 		</Rnd>
 	);
